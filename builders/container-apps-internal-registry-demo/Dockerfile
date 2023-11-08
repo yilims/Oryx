@@ -43,13 +43,16 @@ RUN set -eux; \
 
 ADD startup-script.sh /startup-script.sh
 
+COPY app.tar.gz /${COMPRESSED_APP_LOCATION}
+
 RUN chmod u+x /startup-script.sh
 
 # allow cnb user to run update-ca-certificates
 RUN touch /usr/local/share/ca-certificates/internalregistry.crt \
 	&& chmod 666 /usr/local/share/ca-certificates/internalregistry.crt
 RUN chown ${CNB_USER_ID}:${CNB_GROUP_ID} /etc/ssl/certs/ \
-	&& chown ${CNB_USER_ID}:${CNB_GROUP_ID} /usr/local/share/ca-certificates/
+	&& chown ${CNB_USER_ID}:${CNB_GROUP_ID} /usr/local/share/ca-certificates/ \
+	&& chown ${CNB_USER_ID}:${CNB_GROUP_ID} /platform/env
 
 # Give cnb user permission to /cnb/extensions directory
 RUN mkdir -p ${CNB_EXTENSIONS_DIR} && \
@@ -66,7 +69,7 @@ RUN mkdir -p /analyzed && \
 # Give cnb user permission to /cache directory
 RUN mkdir -p /cache && \
 	chown -R ${CNB_USER_ID}:${CNB_GROUP_ID} /cache
+ADD lifecycle /cnb/lifecycle
 
 USER ${CNB_USER_ID}:${CNB_GROUP_ID}
-
 ENTRYPOINT [ "/startup-script.sh" ]
